@@ -1,0 +1,180 @@
+<% layout('layouts/boilerplate') -%>
+<script>
+  const mapToken = "<%= process.env.MAP_TOKEN %>";
+  const coordinates = JSON.parse(
+    "<%= JSON.stringify(listing.geometry.coordinates) %>"
+  );
+  const title = "<%= listing.title %>";
+</script>
+<div class="container mt-4">
+  <div class="row justify-content-center">
+    <div class="list-groups col-md-8">
+      <!-- Card Layout for Image and Content -->
+      <div class="card mainCards overflow-hidden">
+        <!-- Image at the Top -->
+        <img
+          src="<%= listing.image.url %>"
+          alt="Listing Image"
+          class="showImage card-img-top img-fluid"
+        />
+
+        <!-- Content Section -->
+        <div class="card-body">
+          <h3 class="card-title text-center mb-3"><%= listing.title %></h3>
+          <ul class="list-group list-group-flush">
+            <li class="list-group-item">
+              <strong>Owner:</strong> <%= listing.owner.username %>
+            </li>
+            <li class="list-group-item">
+              <strong>Description:</strong> <%= listing.description %>
+            </li>
+            <li class="list-group-item">
+              <strong>Price:</strong> &#8377;<%=
+              listing.price.toLocaleString("en-IN") %>
+            </li>
+            <li class="list-group-item">
+              <strong>Location:</strong> <%= listing.location %>
+            </li>
+            <li class="list-group-item">
+              <strong>Country:</strong> <%= listing.country %>
+            </li>
+          </ul>
+
+          <!-- Buttons Section -->
+          <% if(currUser && currUser._id.equals(listing.owner._id)) { %>
+          <div class="d-flex justify-content-between mt-4">
+            <a
+              href="/listings/<%= listing._id %>/edit"
+              class="btn listingbtn btn-warning flex-grow-1 me-2"
+              >Edit</a
+            >
+            <form
+              action="/listings/<%= listing._id %>?_method=DELETE"
+              method="post"
+              class="flex-grow-1"
+            >
+              <button class="btn listingbtn btn-danger w-100">Delete</button>
+            </form>
+          </div>
+          <% } %>
+        </div>
+      </div>
+    </div>
+  </div>
+  <% if(currUser) { %>
+  <hr class="col-md-8 m-auto" />
+  <div class="col-md-8">
+    <div class="reviews col-md-6 m-auto mt-4">
+      <h3>Leave a Review</h3>
+      <form
+        action="/listings/<%= listing._id %>/reviews"
+        method="post"
+        novalidate
+        class="needs-validation"
+      >
+        <div>
+          <label for="rating" class="form-label">Rating</label>
+          <fieldset class="starability-slot">
+            <input
+              type="radio"
+              id="no-rate"
+              class="input-no-rate"
+              name="reviews[rating]"
+              value="1"
+              checked
+              aria-label="No rating."
+            />
+            <input
+              type="radio"
+              id="first-rate1"
+              name="reviews[rating]"
+              value="1"
+            />
+            <label for="first-rate1" title="Terrible">1 star</label>
+            <input
+              type="radio"
+              id="first-rate2"
+              name="reviews[rating]"
+              value="2"
+            />
+            <label for="first-rate2" title="Not good">2 stars</label>
+            <input
+              type="radio"
+              id="first-rate3"
+              name="reviews[rating]"
+              value="3"
+            />
+            <label for="first-rate3" title="Average">3 stars</label>
+            <input
+              type="radio"
+              id="first-rate4"
+              name="reviews[rating]"
+              value="4"
+            />
+            <label for="first-rate4" title="Very good">4 stars</label>
+            <input
+              type="radio"
+              id="first-rate5"
+              name="reviews[rating]"
+              value="5"
+            />
+            <label for="first-rate5" title="Amazing">5 stars</label>
+          </fieldset>
+        </div>
+        <div>
+          <label for="comment" class="form-label">Comment</label>
+          <textarea
+            class="form-control"
+            name="reviews[comment]"
+            placeholder="Leave a comment here"
+            id="comment"
+            style="height: 100px"
+            required
+          ></textarea>
+          <div class="invalid-feedback">
+            Please submit some comments for review
+          </div>
+        </div>
+        <div class="col-12">
+          <button class="btn listingbtn btn-primary mt-3" type="submit">
+            Submit
+          </button>
+        </div>
+      </form>
+    </div>
+  </div>
+  <% } %> <% if(listing.reviews.length !== 0) { %>
+  <hr class="col-md-8 m-auto mt-3" />
+  <div class="showReviews col-md-8 m-auto mt-3">
+    <h3>All Reviews</h3>
+    <div class="col mt-3">
+      <div class="row w-100">
+        <% for(review of listing.reviews) { %>
+        <div class="card col-md-5 ms-3 mb-3">
+          <div class="card-body">
+            <h5 class="card-title">@<%= review.author.username %></h5>
+            <p
+              class="starability-result card-text"
+              data-rating="<%= review.rating %>"
+            ></p>
+            <p class="card-text"><%= review.comment %></p>
+            <form
+              action="/listings/<%= listing._id %>/reviews/<%= review._id %>?_method=DELETE"
+              method="post"
+            >
+              <button class="btn btn-dark btn-sm">Delete</button>
+            </form>
+          </div>
+        </div>
+        <% } %>
+      </div>
+    </div>
+  </div>
+  <hr class="col-md-8 m-auto mt-3" />
+  <% } %>
+  <div class="map_container col-md-8 m-auto mt-4">
+    <h4>Where you'll be</h4>
+    <div id="map"></div>
+  </div>
+</div>
+<script src="/js/map.js"></script>
